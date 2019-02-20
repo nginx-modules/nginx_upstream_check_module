@@ -188,15 +188,18 @@ Below it's the sample of `json` page:
   "servers": {
     "total": 1,
     "generation": 3,
-    "server0": {
-      "upstream": "backend",
-      "name": "106.187.48.116:80",
-      "status": "up",
-      "rise": 58,
-      "fall": 0,
-      "type": "http",
-      "port": 80
-    }
+    "server": [
+      {
+        "index": 0,
+        "upstream": "backend",
+        "name": "106.187.48.116:80",
+        "status": "up",
+        "rise": 58,
+        "fall": 0,
+        "type": "http",
+        "port": 80
+      }
+    ]
   }
 }
 ```
