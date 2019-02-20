@@ -1,7 +1,11 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="1.0"></a>
+## [1.0] - 2019-02-20
 ### Add
+- Add changelog (Markdown)
 - Add https support
 - Add prometheus gauge response format
 - Add 1.9.2+ support
@@ -81,6 +85,16 @@
 
 ### Use
 - use SSL_free to free openssl data
+
+### Pull Requests
+- Merge pull request [#146](https://github.com/nginx-modules/nginx_upstream_check_module/issues/146) from guanglinlv/master
+- Merge pull request [#111](https://github.com/nginx-modules/nginx_upstream_check_module/issues/111) from internetstaff/master
+- Merge pull request [#119](https://github.com/nginx-modules/nginx_upstream_check_module/issues/119) from Whissi/nginx-1.11.5-respin
+- Merge pull request [#105](https://github.com/nginx-modules/nginx_upstream_check_module/issues/105) from prune998/patch-1
+- Merge pull request [#63](https://github.com/nginx-modules/nginx_upstream_check_module/issues/63) from jbergstroem/master
+- Merge pull request [#51](https://github.com/nginx-modules/nginx_upstream_check_module/issues/51) from saravsars/master
+- Merge pull request [#48](https://github.com/nginx-modules/nginx_upstream_check_module/issues/48) from dmitry-saprykin/reload-segfault-fix
+- Merge pull request [#45](https://github.com/nginx-modules/nginx_upstream_check_module/issues/45) from bradq/master
 
 
 <a name="v0.3.0"></a>
@@ -371,7 +385,8 @@
 - Use <td> correctly
 
 
-[Unreleased]: https://github.com/nginx-modules/nginx_upstream_check_module/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/nginx-modules/nginx_upstream_check_module/compare/1.0...HEAD
+[1.0]: https://github.com/nginx-modules/nginx_upstream_check_module/compare/v0.3.0...1.0
 [v0.3.0]: https://github.com/nginx-modules/nginx_upstream_check_module/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/nginx-modules/nginx_upstream_check_module/compare/v0.1.9...v0.2.0
 [v0.1.9]: https://github.com/nginx-modules/nginx_upstream_check_module/compare/v0.1.5...v0.1.9
