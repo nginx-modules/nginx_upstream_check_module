@@ -3349,7 +3349,7 @@ ngx_http_upstream_check_status_json_format(ngx_buf_t *b,
 static void
 ngx_http_upstream_check_status_prometheus_format(ngx_buf_t *b,
         ngx_http_upstream_check_peers_t *peers, ngx_uint_t flag) {
-    ngx_uint_t                       count, upCount, downCount, i, last;
+    ngx_uint_t                       count, upCount, downCount, i/*, last*/;
     ngx_http_upstream_check_peer_t  *peer;
 
     peer = peers->peers.elts;
@@ -3399,7 +3399,7 @@ ngx_http_upstream_check_status_prometheus_format(ngx_buf_t *b,
                            downCount,
                            ngx_http_upstream_check_shm_generation);
 
-    last = peers->peers.nelts - 1;
+    // last = peers->peers.nelts - 1;
 
     b->last = ngx_snprintf(b->last, b->end - b->last,
                            "# HELP nginx_upstream_server_rise Nginx rise counter\n"
