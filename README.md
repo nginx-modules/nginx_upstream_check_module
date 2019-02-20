@@ -1,6 +1,6 @@
 About
 =====
-`nginx_http_upstream_check_module` - support upstream servers health check with Nginx.
+`nginx_http_upstream_check_module` - support upstream servers health check with NGINX.
 This module has a custom json format to better fit the kibana beats.
 
 Synopsis
@@ -51,28 +51,26 @@ Add the health check for the upstream servers.
 
 The parameters' meanings are:
 * `interval`: the check request's interval time.
-* `fall`(fall_count): After fall_count check failures, the server is marked down.
-* `rise`(rise_count): After rise_count check success, the server is marked up.
+* `fall`(`fall_count`): After fall_count check failures, the server is marked down.
+* `rise`(`rise_count`): After rise_count check success, the server is marked up.
 * `timeout`: the check request's timeout.
 * `default_down`: set initial state of backend server, default is down.
 * `port`: specify the check port in the backend servers.
   It can be different with the original servers port.
   Default the port is 0 and it means the same as the original backend server.
 * `type`: the check protocol type:
-    1. `tcp` is a simple tcp socket connect and peek one byte.
-    2. `ssl_hello` sends a client ssl hello packet and receives the
-       server ssl hello packet.
-    3. `http` sends a http request packet, receives and parses the http
-       response to diagnose if the upstream server is alive.
-    4. `https` establishes a https connection and sends a http request
-       packet, receives and parses the http response to diagnose if the
-       upstream server is alive.
-    5. `mysql` connects to the mysql server, receives the greeting
-       response to diagnose if the upstream server is alive.
-    6. `ajp` sends a AJP Cping packet, receives and parses the AJP
-       Cpong response to diagnose if the upstream server is alive.
-    7. `fastcgi` send a fastcgi request, receives and parses the
-       fastcgi response to diagnose if the upstream server is alive.
+  - `tcp` is a simple TCP connector for connecting and viewing a single byte.
+  - `http` sends an http request packet, receives and analyzes the HTTP
+    response packet for diagnostics if the upstream server is alive.
+  - `https` establishes a https connection and sends an http request packet,
+    receives and analyzes the http response to diagnose if the previous server is alive.
+  - `ssl_hello` sends the `SSL Hello` packet to the client and receives the `SSL Hello` server packet.
+  - `mysql` connects to the MySQL server, receives a greeting response
+    to diagnose whether the previous upstream server is working.
+  - `ajp` sends an AJP Cping packet, receives and analyzes the AJP Cpong
+    response to diagnose if the previous server is working.
+  - `fastcgi` sends a FastCGI request, receives and analyzes
+    the FastCGI response to diagnose the upstream server is working.
 
 
 check_http_send
@@ -272,12 +270,12 @@ like this:
     $ make
     $ make install
 
-Note that, the nginx-sticky-module also needs the original check.patch.
+Note that, the nginx-sticky-module also needs the original `check*.patch`.
 
 Compatibility
 =============
-    *   The module version 0.1.5 should be compatibility with 0.7.67+
-    *   The module version 0.1.8 should be compatibility with Nginx-1.0.14+
+* The module version 0.1.5 should be compatibility with 0.7.67+
+* The module version 0.1.8 should be compatibility with Nginx-1.0.14+
 
 Notes
 =====
@@ -291,19 +289,18 @@ Known Issues
 ============
 
 
-Changelogs
+[Changelogs](/CHANGELOG.md)
 ==========
-  v0.3
-    * Support keepalive check requests
-    * FastCGI check requests
-    * JSON/CSV check status page support
-  v0.1
-    * First release
 
-Authors
+Authors and Contributors
 =======
+The following individuals authored the bulk of this module:
+
 * Weibin Yao(姚伟斌) *yaoweibin at gmail dot com*
 * Matthieu Tourne
+
+A list of all the individuals who have contributed can be found by visiting the
+[contributors page](https://github.com/nginx-modules/nginx_upstream_check_module/graphs/contributors).
 
 Copyright & License
 ===================
