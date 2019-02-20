@@ -43,7 +43,7 @@ check
 -----
 * **syntax**: `check interval=milliseconds [fall=count] [rise=count]
                [timeout=milliseconds] [default_down=true|false]
-               [type=tcp|http|ssl_hello|mysql|ajp|fastcgi]`
+               [type=tcp|http|https|ssl_hello|mysql|ajp|fastcgi]`
 * **default**: `none` parameters are `interval=30000 fall=5 rise=2 timeout=1000 default_down=true type=tcp`
 * **context**: `upstream`
 
@@ -60,15 +60,18 @@ The parameters' meanings are:
   Default the port is 0 and it means the same as the original backend server.
 * `type`: the check protocol type:
     1. `tcp` is a simple tcp socket connect and peek one byte.
-    2. `sl_hello` sends a client ssl hello packet and receives the
+    2. `ssl_hello` sends a client ssl hello packet and receives the
        server ssl hello packet.
     3. `http` sends a http request packet, receives and parses the http
        response to diagnose if the upstream server is alive.
-    4. `mysql` connects to the mysql server, receives the greeting
+    4. `https` establishes a https connection and sends a http request
+       packet, receives and parses the http response to diagnose if the
+       upstream server is alive.
+    5. `mysql` connects to the mysql server, receives the greeting
        response to diagnose if the upstream server is alive.
-    5. `ajp` sends a AJP Cping packet, receives and parses the AJP
+    6. `ajp` sends a AJP Cping packet, receives and parses the AJP
        Cpong response to diagnose if the upstream server is alive.
-    6. `fastcgi` send a fastcgi request, receives and parses the
+    7. `fastcgi` send a fastcgi request, receives and parses the
        fastcgi response to diagnose if the upstream server is alive.
 
 

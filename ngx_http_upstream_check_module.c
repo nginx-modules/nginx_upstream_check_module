@@ -241,6 +241,10 @@ struct ngx_http_upstream_check_srv_conf_s {
 
     ngx_uint_t                               default_down;
 
+#if (NGX_HTTP_SSL)
+    ngx_ssl_t                                ssl;
+#endif
+
     ngx_uint_t                               fast_upstream_init;
 };
 
@@ -348,6 +352,11 @@ static ngx_int_t ngx_http_upstream_check_peek_one_byte(ngx_connection_t *c);
 
 static void ngx_http_upstream_check_begin_handler(ngx_event_t *event);
 static void ngx_http_upstream_check_connect_handler(ngx_event_t *event);
+
+#if (NGX_HTTP_SSL)
+    static void ngx_http_upstream_do_ssl_handshake(ngx_event_t *event);
+    static void ngx_ups_ssl_handshake(ngx_connection_t *c);
+#endif
 
 static void ngx_http_upstream_check_peek_handler(ngx_event_t *event);
 
@@ -696,19 +705,21 @@ static ngx_check_conf_t  ngx_check_types[] = {
         1
     },
 
+#if (NGX_HTTP_SSL)
     {
         NGX_HTTP_CHECK_HTTP,
-        ngx_string("fastcgi"),
-        ngx_null_string,
-        0,
+        ngx_string("https"),
+        ngx_string("GET / HTTP/1.0\r\n\r\n"),
+        NGX_CONF_BITMASK_SET | NGX_CHECK_HTTP_2XX | NGX_CHECK_HTTP_3XX,
         ngx_http_upstream_check_send_handler,
         ngx_http_upstream_check_recv_handler,
         ngx_http_upstream_check_http_init,
-        ngx_http_upstream_check_fastcgi_parse,
+        ngx_http_upstream_check_http_parse,
         ngx_http_upstream_check_http_reinit,
         1,
-        0
+        1
     },
+#endif
 
     {
         NGX_HTTP_CHECK_SSL_HELLO,
@@ -748,6 +759,20 @@ static ngx_check_conf_t  ngx_check_types[] = {
         ngx_http_upstream_check_ajp_init,
         ngx_http_upstream_check_ajp_parse,
         ngx_http_upstream_check_ajp_reinit,
+        1,
+        0
+    },
+
+    {
+        NGX_HTTP_CHECK_HTTP,
+        ngx_string("fastcgi"),
+        ngx_null_string,
+        0,
+        ngx_http_upstream_check_send_handler,
+        ngx_http_upstream_check_recv_handler,
+        ngx_http_upstream_check_http_init,
+        ngx_http_upstream_check_fastcgi_parse,
+        ngx_http_upstream_check_http_reinit,
         1,
         0
     },
@@ -1189,6 +1214,7 @@ ngx_http_upstream_check_connect_handler(ngx_event_t *event) {
 
     peer = event->data;
     ucscf = peer->conf;
+    int is_https_check_type = strcmp((const char *)peer->conf->check_type_conf->name.data, "https") == 0;
 
     if (peer->pc.connection != NULL) {
         c = peer->pc.connection;
@@ -1233,12 +1259,20 @@ ngx_http_upstream_check_connect_handler(ngx_event_t *event) {
     c->read->log = c->log;
     c->write->log = c->log;
     c->pool = peer->pool;
+#if (NGX_HTTP_SSL)
+    if (is_https_check_type && rc == NGX_AGAIN) {
+        c->write->handler = ngx_http_upstream_do_ssl_handshake;
+        c->read->handler = ngx_http_upstream_do_ssl_handshake;
+    }
+#endif
 
 upstream_check_connect_done:
     peer->state = NGX_HTTP_CHECK_CONNECT_DONE;
 
-    c->write->handler = peer->send_handler;
-    c->read->handler = peer->recv_handler;
+    if (!is_https_check_type) {
+        c->write->handler = peer->send_handler;
+        c->read->handler = peer->recv_handler;
+    }
 
     ngx_add_timer(&peer->check_timeout_ev, ucscf->check_timeout);
 
@@ -1247,6 +1281,67 @@ upstream_check_connect_done:
         c->write->handler(c->write);
     }
 }
+
+#if (NGX_HTTP_SSL)
+static void ngx_http_upstream_do_ssl_handshake(ngx_event_t *event) {
+    long                  rc;
+    ngx_connection_t                    *c;
+    ngx_http_upstream_check_peer_t      *peer;
+    ngx_http_upstream_check_srv_conf_t  *ucscf;
+    c = event->data;
+    peer = c -> data;
+    ucscf = peer->conf;
+    ucscf->ssl.buffer_size = NGX_SSL_BUFSIZE;
+    ucscf->ssl.ctx = SSL_CTX_new(SSLv23_method());
+    rc = ngx_ssl_create_connection(&ucscf->ssl, c, NGX_SSL_BUFFER|NGX_SSL_CLIENT);
+    if (rc != NGX_OK) {
+        return;
+    }
+    int tcp_nodelay = 1;
+    if (setsockopt(c->fd, IPPROTO_TCP, TCP_NODELAY,
+                   (const void *) &tcp_nodelay, sizeof(int)) == -1) {
+        ngx_connection_error(c, ngx_socket_errno,
+                             "setsockopt(TCP_NODELAY) failed");
+        return;
+    }
+    c->tcp_nodelay = NGX_TCP_NODELAY_SET;
+    rc = ngx_ssl_handshake(c);
+    if (rc != NGX_OK && rc != NGX_AGAIN) {
+        ngx_ssl_shutdown(peer->pc.connection);
+        SSL_CTX_free(ucscf->ssl.ctx);
+        ucscf->ssl.ctx = NULL;
+        return;
+    }
+    if (rc == NGX_AGAIN) {
+        if (!c->write->timer_set) {
+            ngx_add_timer(c->write, ucscf->check_timeout);
+        }
+        c->ssl->handler = ngx_ups_ssl_handshake;
+    } else {
+        ngx_ups_ssl_handshake(c);
+    }
+}
+
+static void
+ngx_ups_ssl_handshake(ngx_connection_t *c) {
+    long                  rc;
+    ngx_http_upstream_check_peer_t      *peer;
+    peer = c->data;
+    if (c->ssl && c->ssl->handshaked) {
+        rc = SSL_get_verify_result(c->ssl->connection);
+        if (rc != X509_V_OK) {
+            ngx_log_error(NGX_LOG_ERR, c->log, 0,
+                          "upstream SSL certificate verify error: (%l:%s)",
+                          rc, X509_verify_cert_error_string(rc));
+        }
+    }
+    peer->state = NGX_HTTP_CHECK_CONNECT_DONE;
+    c->write->handler = peer->send_handler;
+    c->read->handler = peer->recv_handler;
+    /* the kqueue's loop interface needs it. */
+    c->write->handler(c->write);
+}
+#endif
 
 static ngx_int_t
 ngx_http_upstream_check_peek_one_byte(ngx_connection_t *c) {
@@ -2663,6 +2758,17 @@ ngx_http_upstream_check_status_update(ngx_http_upstream_check_peer_t *peer,
         }
     }
 
+#if (NGX_HTTP_SSL)
+    int is_https_check_type = strcmp((const char *)peer->conf->check_type_conf->name.data, "https") == 0;
+    if (is_https_check_type) {
+        ngx_http_upstream_check_srv_conf_t  *ucscf;
+        ucscf = peer->conf;
+        if (ucscf->ssl.ctx) {
+            ngx_ssl_shutdown(peer->pc.connection);
+            SSL_CTX_free(ucscf->ssl.ctx);
+        }
+    }
+#endif
     peer->shm->access_time = ngx_current_msec;
 }
 
