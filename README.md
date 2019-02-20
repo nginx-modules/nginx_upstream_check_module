@@ -128,7 +128,7 @@ enlarge it with this directive.
 
 check_status
 ------------
-* **syntax**: `check_status [html|csv|json]`
+* **syntax**: `check_status [html|csv|json|prometheus]`
 * **default**: `none`
 * **context**: `location`
 
