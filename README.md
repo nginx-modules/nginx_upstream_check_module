@@ -43,8 +43,9 @@ check
 -----
 * **syntax**: `check interval=milliseconds [fall=count] [rise=count]
                [timeout=milliseconds] [default_down=true|false]
+               [fast_upstream_init=true|false]
                [type=tcp|http|https|ssl_hello|mysql|ajp|fastcgi]`
-* **default**: `none` parameters are `interval=30000 fall=5 rise=2 timeout=1000 default_down=true type=tcp`
+* **default**: `none` parameters are `interval=30000 fall=5 rise=2 timeout=1000 default_down=true fast_upstream_init=false type=tcp`
 * **context**: `upstream`
 
 Add the health check for the upstream servers.
@@ -55,6 +56,7 @@ The parameters' meanings are:
 * `rise`(`rise_count`): After rise_count check success, the server is marked up.
 * `timeout`: the check request's timeout.
 * `default_down`: set initial state of backend server, default is down.
+* `fast_upstream_init`: feature for fast mark upstream UP on start is alive.
 * `port`: specify the check port in the backend servers.
   It can be different with the original servers port.
   Default the port is 0 and it means the same as the original backend server.
