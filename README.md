@@ -147,6 +147,7 @@ format. You can do like this:
     /status?format=html
     /status?format=csv
     /status?format=json
+    /status?format=prometheus
 
 At present, you can fetch the list of servers with the same status by
 the argument of `status`. For example:
@@ -159,25 +160,42 @@ Below it's the sample html page:
 ```xml
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<title>Nginx http upstream check status</title>
-    <h1>Nginx http upstream check status</h1>
-    <h2>Check upstream server number: 1, generation: 3</h2>
-            <th>Index</th>
-            <th>Upstream</th>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Rise counts</th>
-            <th>Fall counts</th>
-            <th>Check type</th>
-            <th>Check port</th>
-            <td>0</td>
-            <td>backend</td>
-            <td>106.187.48.116:80</td>
-            <td>up</td>
-            <td>39</td>
-            <td>0</td>
-            <td>http</td>
-            <td>80</td>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Nginx http upstream check status</title>
+</head>
+<body>
+<h1>Nginx http upstream check status</h1>
+<h2>Check upstream server number: 1, generation: 3</h2>
+<table style="background-color:white" cellspacing="0"
+       cellpadding="3" border="1">
+  <tr bgcolor="#C0C0C0">
+    <th>Index</th>
+    <th>Upstream</th>
+    <th>Name</th>
+    <th>Status</th>
+    <th>Rise counts</th>
+    <th>Fall counts</th>
+    <th>Check type</th>
+    <th>Check port</th>
+    <th>Uptime or First failure since</th>
+    <th>Elapse in seconds</th>
+  </tr>
+  <tr>
+    <td>0</td>
+    <td>backend</td>
+    <td>106.187.48.116:80</td>
+    <td>up</td>
+    <td>39</td>
+    <td>0</td>
+    <td>http</td>
+    <td>80</td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
+</body>
+</html>
 ```
 
 Below it's the sample of `csv` page:
