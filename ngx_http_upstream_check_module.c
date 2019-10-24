@@ -4470,6 +4470,10 @@ static ngx_int_t
 ngx_http_upstream_check_init_process(ngx_cycle_t *cycle) {
     ngx_http_upstream_check_main_conf_t *ucmcf;
 
+    if (ngx_process != NGX_PROCESS_WORKER) {
+        return NGX_OK;
+    }
+
     ucmcf = ngx_http_cycle_get_module_main_conf(cycle, ngx_http_upstream_check_module);
     if (ucmcf == NULL) {
         return NGX_OK;
