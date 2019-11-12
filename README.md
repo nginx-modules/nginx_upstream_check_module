@@ -93,6 +93,15 @@ check_http_expect_alive
 These status codes indicate the upstream server's http
 response is ok, the backend is alive.
 
+check_http_expect_body
+------------------------
+* **syntax**: `check_http_body "text match"`
+* **default**: `none`
+* **context**: `upstream`
+
+If you set the check type is http, then check the body of
+the returned page and search for this string.
+
 check_keepalive_requests
 ------------------------
 * **syntax**: `check_keepalive_requests num`
