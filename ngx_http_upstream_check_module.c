@@ -1198,7 +1198,7 @@ ngx_http_upstream_check_begin_handler(ngx_event_t *event) {
     if (peer->shm->owner == ngx_pid) {
         if (prev_owner != ngx_pid) {
 
-            ngx_log_error(NGX_LOG_INFO, event->log, 0,
+            ngx_log_error(NGX_LOG_DEBUG, event->log, 0,
                           "check has changed owner. "
                           "prev_owner: %P, interval: %M",
                           prev_owner, interval);
